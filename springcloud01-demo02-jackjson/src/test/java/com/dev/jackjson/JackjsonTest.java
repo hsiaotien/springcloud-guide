@@ -83,6 +83,10 @@ public class JackjsonTest {
 		List<List<User>> list = objectMapper.readValue(listComplexJson, new TypeReference<List<List<User>>>() {
 		});// 复杂的json
 		System.out.println("list = " + list);
+		/*
+		要注意的是，这里的泛型是编译器的泛型，而不是运行期的泛型。
+		编译期的泛型，不会擦除，直接编译到class文件中。
+		 */
 
 		//反序列化02
 		String json = "{\"username\":\"zhangsan\",\"age\":18}";
