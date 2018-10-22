@@ -1,0 +1,25 @@
+server:
+  port: 8082
+
+logging:
+  level:
+    com:
+      dev: debug
+
+spring:
+  application:
+    name: consumer-demo-0301
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:10086/eureka
+    registry-fetch-interval-seconds: 5
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.application.name}:${server.port}
+#########eureka的配置结束，接下来要配置其他如robbin,feign############
+
+
+
+
