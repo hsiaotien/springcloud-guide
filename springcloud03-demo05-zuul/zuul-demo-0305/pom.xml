@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>springcloud03-demo05-zuul</artifactId>
+        <groupId>com.dev</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>zuul-demo-0305</artifactId>
+
+    <dependencies>
+        <!-- zuul中引入了robbin和hystrix的启动器，所以引入zuul启动器，
+        这两个核心组件的启动器不需要引入。
+        注意zuul使用的默认http客户端是http client(apache的），
+        如果要用其他客户端如rest client或者ok client，需要在application.yml配置属性-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+        </dependency>
+        <!-- 面向服务的路由配置时，需要eureka注册和拉取服务，在zuul的技术演进过程中，
+        开始是面向url不需要引入，面向服务才需要eureka来拉取服务-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

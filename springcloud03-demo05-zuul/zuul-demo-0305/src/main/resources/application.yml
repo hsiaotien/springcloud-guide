@@ -1,0 +1,81 @@
+server:
+  port: 10010
+spring:
+  application:
+    name: zuul-demo-0305
+#################面向url的动态路由，缺点在于硬编码，还不能负载均衡#############################
+
+# 第一种配置方式：面向url的动态路由（实际上这种配置，不需要eureka)
+#zuul:
+#  routes:
+#    user-server-0305: # 实际上这里此时是路由名，可以随意
+#      path: /user-server-0305/** # 路径也可以随意
+#      url: http://127.0.0.1:8081/
+
+#在刚才的路由规则中，我们把路径对应的服务地址写死了！
+#如果同一服务有多个实例的话，这样做显然就不合理了。
+#我们应该根据服务的名称，去Eureka注册中心查找 服务对应的所有实例列表，然后进行动态路由才对！
+#####################面向服务的配置方案，需要引入eureka,并配置eureka进行注册拉取########################
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://127.0.0.1:10086/eureka
+      # 当服务消费者启动是，会检测eureka.client.fetch-registry=true参数的值，
+      # 如果为true，则会从Eureka Server服务的列表中读备份，然后缓存在本地。
+      # 并且每隔5秒会重新获取并更新数据
+    registry-fetch-interval-seconds: 5
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.application.name}:${server.port}
+    # 当其他服务获取地址时,获取的是ip,而不是hostname
+    # 这里指定了自己的ip信息,不指定会自己寻找
+    lease-renewal-interval-in-seconds: 5 # 笔记中未配置续约周期. 我认为每一个在开发时,每一个服务都应该配置
+    lease-expiration-duration-in-seconds: 10
+
+#zuul:
+#  routes:
+#    user-server-0305: # 这里是路由id，依旧可以随意写
+#      path: /user-server-0305/** # 这里是映射路径
+#      serviceId: user-server-0305 # 指定服务名称
+##还可以简写为：
+#zuul:
+#  routes:
+#    user-server-0305: /user-server-0305/** # 这里是serviceId:映射路径path.  服务名称不能随意写了
+
+##还可以省略不写路由规则，使用默认的路由规则
+# 默认情况下，一切服务的映射路径就是服务名本身，也就是说，刚才的映射规则我们完全不配置也是OK的
+## 还可以加路由前缀
+#zuul:
+#  prefix: /api # 添加路由前缀
+#  routes:
+#    user-server-0305: /user-server-0305/** # 这里是serviceId:映射路径path
+
+###################注意，动态路由过程中，还有负载均衡的作用，zuul启动器引入了robbin#######################
+
+
+################事实上还要定义负载均衡机制和熔断配置，默认的负载均衡和熔断不友好（eureka面向服务还是要配置的）#####################
+zuul:
+  prefix: /api # 添加路由前缀
+  routes:
+    user-server-0305: /user-server-0305/** # 这里是serviceId:映射路径path
+  retryable: true
+
+ribbon: # 全局负载均衡
+  ConnectTimeout: 250 # Ribbon的连接超时时间
+  ReadTimeout: 1000 # Ribbon的数据读取超时时间
+  OkToRetryOnAllOperations: true # 是否对所有操作都进行重试
+  MaxAutoRetriesNextServer: 1 # 切换实例的重试次数
+  MaxAutoRetries: 1 # 对当前实例的重试次数
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 6000
+###???重试机制生效没，配置的熔断生效没？？？

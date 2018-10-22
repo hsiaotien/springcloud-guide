@@ -1,0 +1,46 @@
+server:
+  port: 10086 # 端口
+
+
+spring:
+  application:
+    name: eureka-server-0305 #应用名称会在eureka中显示
+
+    # eureka:
+    #  client:
+    # register-with-eureka: false #是否将自己的信息(微服务)注册到eurekaServer
+    # fetch-registry: false # 是否从eurekaServer上拉取其他服务的信息
+    # service-url: # EurekaServer的地址,如果做集群的话,需要添加其他server的地址
+    #  defaultZone: http://127.0.0.1:${server.port}/eureka
+    # 没有对eureka做集群时,使用上面的配置,无需注册自己,无需拉取其他服务
+    # 做集群的思路,两个eureka之间相互注册. eureka集群的每个节点在收到其他服务的注册后,都会将数据同步到每一个节点
+    # 这样就实现了数据的同步,任何一个客户端访问eureka任一个节点,都能获取完整的服务列表
+
+logging:
+  level:
+    com.dev: debug
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    # 每一个eureka也是一个服务,并且相互注册, 实现集群,
+    # 并且节点实现数据同步,保证每一个节点取出的服务列表是完整的
+    service-url:
+      defaultZone: http://127.0.0.1:10086/eureka
+
+      # Eureka Server需要将这样的服务剔除出服务列表。
+      # 因此它会开启一个定时任务，每隔10(默认60?  太长)秒对所有失效的服务（超过90秒未响应）进行剔除
+  server:
+    eviction-interval-timer-in-ms: 5000
+    # Eureka的自我保护机制.Eureka就会把当前实例的注册信息保护起来，需要关闭
+    enable-self-preservation: false
+  instance:
+    instance-id: ${spring.application.name}:${server.port}
+
+
+
+# 笔记的设置方式
+# eureka:
+#  server:
+#    enable-self-preservation: false # 关闭自我保护模式（缺省为打开）
+#    eviction-interval-timer-in-ms: 1000 # 扫描失效服务的间隔时间（缺省为60*1000ms）
