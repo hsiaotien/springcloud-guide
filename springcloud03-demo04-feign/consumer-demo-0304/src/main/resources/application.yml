@@ -1,0 +1,78 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: consumer-demo-0304
+
+############robbin 注意还可以全局配置robbin 去掉负载均衡机制中的服务名称即可################
+# 重试机制的开启, 默认的也是true, 所以可以不写.  但要写重试的策略
+  cloud:
+    loadbalancer:
+      retry:
+        enabled: true
+
+
+user-service: # 服务名称， 可以去掉，表示全局负载均衡
+  ribbon:
+    ConnectTimeout: 250 # Ribbon的连接超时时间
+    ReadTimeout: 1000 # Ribbon的数据读取超时时间
+    OkToRetryOnAllOperations: true # 是否对所有操作都进行重试
+    MaxAutoRetriesNextServer: 1 # 切换实例的重试次数
+    MaxAutoRetries: 1 # 对当前实例的重试次数
+  # 负载均衡的rule策略
+#    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule
+
+#################eureka##################
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://127.0.0.1:10086/eureka,http://127.0.0.1:10087/eureka
+      # 当服务消费者启动是，会检测eureka.client.fetch-registry=true参数的值，
+      # 如果为true，则会从Eureka Server服务的列表中读备份，然后缓存在本地。
+      # 并且每隔5秒会重新获取并更新数据
+    registry-fetch-interval-seconds: 5
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.application.name}:${server.port}
+    # 当其他服务获取地址时,获取的是ip,而不是hostname
+    # 这里指定了自己的ip信息,不指定会自己寻找
+    lease-renewal-interval-in-seconds: 5 # 笔记中未配置续约周期. 我认为每一个在开发时,每一个服务都应该配置
+    lease-expiration-duration-in-seconds: 10
+########logger###########
+logging:
+  level:
+    org.springframework: debug
+    com.dev: debug
+
+
+#################hystrix##################
+
+# 重试机制没有生效,重试机制没有被触发，而是先触发了熔断。所以，Ribbon的超时时间一定要小于Hystix的超时时间。
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 1500 #将值调小（目前随机阻塞2000ms内)，但要大于readtime1000ms,可以看到熔断又可以看到重试
+
+###########feign里要开启hystrix#############
+feign:
+  hystrix:
+    enabled: true # 开启Feign的熔断功能
+  compression:
+    request:
+      enabled: true # 开启请求压缩
+      mime-types: text/html,application/xml,application/json # 设置压缩的数据类型
+      min-request-size: 2048 # 设置触发压缩的大小下限
+    response:
+      enabled: true # 开启响应压缩
+
+
+
+

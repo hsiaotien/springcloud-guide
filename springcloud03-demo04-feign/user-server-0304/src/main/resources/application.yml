@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mybatis_test
+    username: root
+    password: 123
+  application:
+    name: user-service-0304 # 应用名称
+
+server:
+  port: 8081
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true # 默认客户端会向eureka服务端注册,会拉取注册列表
+    service-url: # EurekaServer的地址
+      defaultZone: http://127.0.0.1:10086/eureka
+  instance:
+    # 当调用getHostname获取实例的hostname.返回的是ip 而不是名称
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    # 服务一开启,就检测是否注册, true则注册. 此外,心跳机制,即每隔5秒,服务都向注册中心发送一次心跳,证明自己活着.
+    # 当间隔10秒没有发送心跳,eureka就认为该服务宕机.会从服务列表中移除
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 10
+    # instance-id是区分同一服务的不同实例的唯一标准，因此不能重复。有默认的id组成, 也可以更改.
+    instance-id: ${spring.application.name}:${server.port}
+# 配置日志
+logging:
+  level:
+    com.dev: debug
+
+
+
+
+
